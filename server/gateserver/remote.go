@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"net"
 	"math/rand"
 	"time"
@@ -66,18 +65,18 @@ func decode(seed int32, buff []byte, start int32, stop int32) {
 }
 
 func onCloseClient(client *ClientConn) {
+	logInfo("closeClient: vfd=%d", client.vfd)
 	client.conn.Close()
 	delete(g_clients, client.vfd)
-
 }
 
 
 func onListenClient(addr string) {
-	fmt.Printf("Listening at %s ...\n", addr)
+	logInfo("Listening at %s\n", addr)
 	for {
 		conn, err := g_wanserver.Accept()
 		if err != nil {
-			fmt.Println("[ERROR]Accept: " + err.Error())
+			logInfo("accept error: " + err.Error())
 			continue
 		}
 		var client ClientConn
@@ -90,6 +89,7 @@ func onListenClient(addr string) {
 		client.writeBuff = make([]byte, WRITE_BUFF_SIZE)
 		client.writeSize = 0
 		g_clients[client.vfd] = client
+		logInfo("new vfd: %d", client.vfd)
 		sendSeed(&client)
 		//启动一个新线程
 		go onRecvClient(&client)
@@ -97,7 +97,7 @@ func onListenClient(addr string) {
 }
 
 func onRecvClient(client *ClientConn) {
-	fmt.Println("[INFO]onAccept:" + client.conn.RemoteAddr().String())
+	logInfo("accept vfd: %d", client.vfd)
 	for {
 		len, err := client.conn.Read(client.readBuff)
 		if err != nil || len < 0 {
@@ -155,12 +155,12 @@ func initRemote(host string) (bool) {
 
 	var addr, err = net.ResolveTCPAddr("tcp4", host)
 	if err != nil {
-		fmt.Println("[ERROR]ResolveTCPAddr:" + err.Error())
+		logInfo("tcp4 addr error: " + err.Error())
 		return false
 	}
 	g_wanserver, err = net.ListenTCP("tcp", addr)
 	if err != nil {
-		fmt.Println("[ERROR]ListenTCP:" + err.Error())
+		logInfo("listen error: " + err.Error())
 		return false
 	}
 	go onListenClient(host)
