@@ -1,4 +1,4 @@
-package main
+package gameserver
 
 import (
 	"os"
@@ -15,7 +15,7 @@ func logInit() (bool) {
 		panic(err)
 		return false
 	}
-	var file = g_config.LogPath + "/gateserver.log"
+	var file = fmt.Sprintf("%s/gameserver_%d.log", g_config.LogPath, g_config.GameID)
 	g_log, err = os.OpenFile(file, os.O_APPEND | os.O_CREATE, os.ModeAppend)
 	if err != nil {
 		panic(err)
@@ -35,7 +35,7 @@ func logClose() {
 func logInfo(format string, a ...interface{}) {
 	var msg = fmt.Sprintf(format, a...)
 	var txt = time.Now().Format("2006-01-02 15:04:05")
-	txt += g_config.NetStr + msg
+	txt += g_config.GameIDStr + msg
 	g_log.WriteString(txt + "\n")
 	g_log.Sync()
 	if g_config.LogPrint {
