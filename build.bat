@@ -1,10 +1,21 @@
-echo build gateserver
-cd src\gateserver
-go build
-copy gateserver.exe ..\bin\
-del /f gateserver.exe
+echo off
 
-cd ..\src\gameserver
+echo build gate
+cd src\gate
 go build
-copy gameserver.exe ..\bin\
-del /f gameserver.exe
+copy gate.exe ..\..\bin\
+del /f gate.exe
+
+echo build game
+cd ..\game
+go build
+copy game.exe ..\..\bin\
+del /f game.exe
+
+echo build account
+cd ..\account
+go build
+copy account.exe ..\..\bin\
+del /f account.exe
+
+pause

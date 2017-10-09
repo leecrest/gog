@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/leecrest/gog/src/gateserver/gateserver"
 	"flag"
+	"github.com/leecrest/gog/src/gate/gate"
 )
 
 
@@ -14,5 +14,6 @@ func main() {
 	id := flag.Int("id", 0, "gate id")
 	flag.Parse()
 
-	gateserver.Run(*path, byte(*id))
+
+	gate.Run(*path, byte(*id))
 }

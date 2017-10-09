@@ -1,38 +1,47 @@
-package gateserver
+package gate
 
-import "net"
+import (
+	"net"
+)
 
 
 type GateCfg struct {
-	NetID byte
-	ServerID uint32			// 服务器组编号
-	WorkSpace string		// 服务器组的工作路径
-	LogPath string 			// 日志文件路径，与工作路径的相对路径
-	RemoteAddr string		// 对外接口
-	LocalAddr string		// 对内接口
-	LogPrint bool
+	serverID uint32			// 服务器组编号
+	workSpace string		// 服务器组的工作路径
+	logPath string 			// 日志文件路径，与工作路径的相对路径
+	console bool
+
+	id byte
+	num byte				// 网关最大数量
+	ip string
+	wanPort uint32
+	lanPort uint32
+
+	wanAddr string			// 当前网关的外网地址
+	lanAddr string			// 当前网关的内网地址
 }
 
 
-// 客户端链接定义
+// 远端链接定义
 type ClientConn struct {
 	vfd uint32				// 链接编号
 	gameID byte				// 所属服务器编号
 	seed uint32				// 种子
 	conn net.Conn			// 链接对象
 	readBuff []byte			// 读缓冲区
-	readSize int			// 读缓冲区大小
+	readSize uint32			// 读缓冲区大小
 	writeBuff []byte		// 写缓冲区
 	writeSize int			// 写缓冲区大小
 }
 
-
-// 游戏服链接对象
+// 本地链接定义
 type GameConn struct {
 	id byte
-	conn net.Conn			// 链接对象
+	port uint32
+	addr string
+	conn net.Conn
 	readBuff []byte			// 读缓冲区
-	readSize int			// 读缓冲区大小
+	readSize uint32			// 读缓冲区大小
 	writeBuff []byte		// 写缓冲区
 	writeSize int			// 写缓冲区大小
 }
@@ -40,20 +49,27 @@ type GameConn struct {
 
 // 常量
 const MAX_VFD uint32 = 102400
-const READ_BUFF_SIZE int = 1024		// 读取来自客户端的请求的缓冲区大小
-const WRITE_BUFF_SIZE int = 10240	// 发送到客户端的数据的缓冲区大小
-const CLIENT_PACK_HEAD int = 2		// 包头，2字节表现包体的长度
-const CLIENT_PACK_MIN int = 3		// 包体最小长度
+const MAX_GAME byte = 250
+const MAX_GATE byte = 250
+
+const CLIENT_READ_BUFF_SIZE uint32 = 1024		// 读取来自客户端的请求的缓冲区大小
+const CLIENT_WRITE_BUFF_SIZE uint32 = 10240		// 发送到客户端的数据的缓冲区大小
+const CLIENT_PACK_HEAD uint32 = 2				// 包头，2字节表现包体的长度
+const CLIENT_PACK_MIN uint32 = 3				// 包体最小长度
+const GAME_READ_BUFF_SIZE uint32 = 10240		// 读取来自game的请求的缓冲区大小
+const GAME_WRITE_BUFF_SIZE uint32 = 10240		// 发送到game的数据的缓冲区大小
 
 
+// 进程间通信结构
+type GameCmd struct {
+	cmd byte
+	gameID byte
+	vfd uint32
+	size uint32
+	data []byte
+}
 
-
-// 进程之间通信的数据结构
-// 包头第1个数据：cmd byte		// 指令类型
-// 包头第2个数据：game byte		// 操作gameid
-// 包头第3个数据：vfd uint32		// 操作vfd
-// 包头第4个数据：data uint32		// 附加数据长度
-const CMD_HEAD_SIZE int = 10
+const CMD_HEAD_SIZE uint32 = 10
 
 // 进程节点之间的通信指令类型
 const CMD_N2G_SYNCGSID byte = 0x01	// 由net发送给game，同步gameid
